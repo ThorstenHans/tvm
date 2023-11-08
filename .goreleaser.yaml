@@ -43,6 +43,11 @@ brews:
       pull_request:
         enabled: true
         draft: false
+        base:
+          owner: ThorstenHans
+          branch: main
+          name: tvm
+
 
 checksum:
   name_template: 'checksums.txt'
