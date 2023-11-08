@@ -67,4 +67,5 @@ changelog:
     exclude:
       - '^docs'
       - '^bot'
+      - 'hide-from-changelog'
       - typo
