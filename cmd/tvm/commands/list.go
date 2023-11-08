@@ -5,17 +5,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var listLimit int = 0
 var listCmd = &cobra.Command{
 	Use:     "list",
-	Short:   "List installed Terraform versions",
+	Short:   "List installed Terraform versions (limited to 40 most recent releases by default)",
 	Aliases: []string{"ls"},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return terraform.ListInstalled(listLimit)
+		limit := 40
+		all, _ := cmd.Flags().GetBool("all")
+		if all {
+			limit = 0
+		}
+		return terraform.ListInstalled(limit)
 	},
 }
 
 func init() {
-	listCmd.Flags().IntVarP(&listLimit, "top", "t", 0, "Show only top n results")
+	listCmd.Flags().Bool("all", false, "Show all releases")
 	rootCmd.AddCommand(listCmd)
 }

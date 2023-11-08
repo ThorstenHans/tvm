@@ -5,19 +5,50 @@ import (
 	"os"
 	"path"
 	"strings"
+
+	"github.com/ThorstenHans/tvm/pkg/dirs"
 )
 
 type Version = string
 
 const (
-	xdgConfigDirVar = "XDG_CONFIG_HOME"
-	xdgDataDirVar   = "XDG_DATA_HOME"
-	tvmFolderName   = "tvm"
-	executable      = "terraform"
+	executable = "terraform"
+	product    = "Terraform"
+	rcFile     = ".terraform-version"
 )
 
 func GetCurrentVersion() (Version, error) {
 	return readVersion()
+}
+
+func PinVersion(v Version) error {
+	dir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path.Join(dir, rcFile), []byte(fmt.Sprintf("%s\n", v)), 0666)
+}
+func PinCurrentVersion() error {
+	v, err := GetCurrentVersion()
+	if err != nil {
+		return fmt.Errorf("could not determine current %s version", product)
+	}
+	return PinVersion(v)
+
+}
+
+func GetPinnedVersion() (Version, bool) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", false
+	}
+	v, err := os.ReadFile(path.Join(dir, rcFile))
+	if err != nil {
+		return "", false
+	}
+	ver := string(v)
+	ver = strings.TrimSpace(ver)
+	return ver, true
 }
 
 func UseVersion(v Version) error {
@@ -37,18 +68,11 @@ func storeVersion(v Version) error {
 }
 
 func getConfigFilePath() (string, error) {
-	cfgFolder, ok := os.LookupEnv(xdgConfigDirVar)
-	var err error
-	if !ok {
-		cfgFolder, err = os.UserHomeDir()
-	}
+	dir, err := dirs.GetTerraformVersionManagerFolder()
 	if err != nil {
 		return "", err
 	}
-	if err == nil && !ok {
-		return path.Join(cfgFolder, fmt.Sprintf(".%s", tvmFolderName), ".tvm"), nil
-	}
-	return path.Join(cfgFolder, tvmFolderName, ".tvm"), nil
+	return path.Join(dir, ".tvm"), nil
 }
 
 func readVersion() (Version, error) {
@@ -57,6 +81,7 @@ func readVersion() (Version, error) {
 		return "", err
 	}
 	_, err = os.Stat(cfg)
+	//TODO: is this correct
 	if err != nil {
 		return "Sorry, you haven't installed any Terraform version.", nil
 	}
@@ -85,34 +110,19 @@ func linkBinary(v Version) error {
 }
 
 func getExecutableFilePath() (string, error) {
-	f, ok := os.LookupEnv(xdgDataDirVar)
-	var err error
-	if !ok {
-		f, err = os.UserHomeDir()
-	}
+	f, err := dirs.GetTerraformVersionManagerFolder()
 	if err != nil {
 		return "", nil
 	}
-	if err == nil && !ok {
-		return path.Join(f, fmt.Sprintf(".%s", tvmFolderName), executable), nil
-	}
-	return path.Join(f, tvmFolderName, executable), nil
+	return path.Join(f, executable), nil
 }
 
 func getVersionBinaryPath(v Version) (string, error) {
-	f, ok := os.LookupEnv(xdgDataDirVar)
-	var err error
-	if !ok {
-		f, err = os.UserHomeDir()
-	}
+	f, err := dirs.GetInstallDir(v)
 	if err != nil {
 		return "", nil
 	}
-	vDir := strings.ReplaceAll(v, ".", "_")
-	if err == nil && !ok {
-		return path.Join(f, fmt.Sprintf(".%s", tvmFolderName), vDir, executable), nil
-	}
-	return path.Join(f, tvmFolderName, vDir, executable), nil
+	return path.Join(f, executable), nil
 }
 
 func removeLink(p string) error {

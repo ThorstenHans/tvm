@@ -9,7 +9,7 @@ func sortVersions(v []string) {
 	sort.Sort(sort.Reverse(sort.StringSlice(v)))
 }
 func limitVersions(v []string, limit int) []string {
-	if limit > 0 {
+	if limit > 0 && len(v) > limit {
 		return v[:limit]
 	}
 	return v

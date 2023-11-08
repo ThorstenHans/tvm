@@ -3,10 +3,12 @@ package terraform
 import (
 	"os"
 	"strings"
+
+	"github.com/ThorstenHans/tvm/pkg/dirs"
 )
 
 func ListInstalled(limit int) error {
-	tvmFolder, err := getTerraformVersionManagerFolder()
+	tvmFolder, err := dirs.GetTerraformVersionManagerFolder()
 	if err != nil {
 		return nil
 	}

@@ -3,46 +3,38 @@ package terraform
 import (
 	"context"
 	"fmt"
+	"os"
+	"time"
+
+	"github.com/ThorstenHans/tvm/pkg/dirs"
+	"github.com/briandowns/spinner"
+	"golang.org/x/sync/errgroup"
+
 	version "github.com/hashicorp/go-version"
 	install "github.com/hashicorp/hc-install"
 	"github.com/hashicorp/hc-install/product"
 	"github.com/hashicorp/hc-install/releases"
 	"github.com/hashicorp/hc-install/src"
-	"os"
-	"path"
-	"strings"
 )
 
-const (
-	xdgDataDirVar = "XDG_DATA_HOME"
-	tvmFolderName = "tvm"
-)
+func Download(ctx context.Context, desiredVersion string) error {
+	group, ctx := errgroup.WithContext(ctx)
+	s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
+	s.Suffix = fmt.Sprintf(" Downloading Terraform %s", desiredVersion)
+	s.Start()
+	group.Go(func() error {
+		_, err := doDownload(ctx, desiredVersion)
+		return err
+	})
 
-func getTerraformVersionManagerFolder() (string, error) {
-	p, ok := os.LookupEnv("xdgDataDirVar")
-	var err error
-	if !ok {
-		p, err = os.UserHomeDir()
-	}
-	if err != nil {
-		return "", nil
-	}
-	if err == nil && !ok {
-		return path.Join(p, fmt.Sprintf(".%s", tvmFolderName)), nil
-	}
-	return path.Join(p, tvmFolderName), nil
+	err := group.Wait()
+	s.Stop()
+	return err
 }
 
-func getInstallDir(version string) (string, error) {
-	tvm, err := getTerraformVersionManagerFolder()
-	if err != nil {
-		return "", err
-	}
-	return path.Join(tvm, strings.ReplaceAll(version, ".", "_")), nil
-}
-func Download(ctx context.Context, desiredVersion string) (string, error) {
+func doDownload(ctx context.Context, v string) (string, error) {
 	i := install.NewInstaller()
-	installDir, err := getInstallDir(desiredVersion)
+	installDir, err := dirs.GetInstallDir(v)
 	if err != nil {
 		return "", err
 	}
@@ -52,13 +44,15 @@ func Download(ctx context.Context, desiredVersion string) (string, error) {
 
 	installable := []src.Installable{
 		&releases.ExactVersion{
-			Product:    product.Terraform,
-			Version:    version.Must(version.NewVersion(desiredVersion)),
-			InstallDir: installDir,
+			Product:                  product.Terraform,
+			Version:                  version.Must(version.NewVersion(v)),
+			InstallDir:               installDir,
+			SkipChecksumVerification: false,
 		},
 	}
 
 	p, err := i.Install(ctx, installable)
+
 	if err != nil {
 		return "", err
 	}
