@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/ThorstenHans/tvm/pkg/terraform"
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -19,10 +18,11 @@ var installCmd = &cobra.Command{
 		v := args[0]
 		err := terraform.Download(ctx, v)
 		if err != nil {
-			color.Red("Error while installing version %s\n%s", v, err)
+			p.Errorf(err, "Error while installing Terraform version %s\n", v)
 			os.Exit(1)
 		}
-		color.Green("Terraform version %s installed successfully.\nYou can switch to it with the `tvm use %s` command\n", v, v)
+		p.Successf("Terraform version %s installed successfully.", v)
+		p.Hintf("You can switch to it with the `tvm use %s` command\n", v)
 	},
 }
 

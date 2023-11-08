@@ -81,9 +81,8 @@ func readVersion() (Version, error) {
 		return "", err
 	}
 	_, err = os.Stat(cfg)
-	//TODO: is this correct
 	if err != nil {
-		return "Sorry, you haven't installed any Terraform version.", nil
+		return "No versions of Terraform installed yet.", nil
 	}
 	d, err := os.ReadFile(cfg)
 	if err != nil {

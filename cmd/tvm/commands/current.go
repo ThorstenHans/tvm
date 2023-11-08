@@ -1,7 +1,8 @@
 package commands
 
 import (
-	"fmt"
+	"os"
+
 	"github.com/ThorstenHans/tvm/pkg/versionmanager"
 	"github.com/spf13/cobra"
 )
@@ -10,13 +11,13 @@ var currentCmd = &cobra.Command{
 	Use:     "current",
 	Short:   "Print the currently active Terraform version",
 	Aliases: []string{"cur"},
-	RunE: func(cmd *cobra.Command, args []string) error {
+	Run: func(cmd *cobra.Command, args []string) {
 		v, err := versionmanager.GetCurrentVersion()
 		if err != nil {
-			return err
+			p.Error(err, "Could not determine current version")
+			os.Exit(1)
 		}
-		fmt.Println(v)
-		return nil
+		p.Successf("Current Terraform version: %s", v)
 	},
 }
 
