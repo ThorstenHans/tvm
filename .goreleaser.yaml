@@ -33,6 +33,8 @@ brews:
     folder: Formula
     homepage: https://www.thorsten-hans.com
     description: "tvm - Terraform Version Manager"
+    conflicts:
+      - terraform
     license: "MIT"
     repository:
       owner: ThorstenHans
@@ -41,10 +43,6 @@ brews:
       pull_request:
         enabled: true
         draft: false
-        base:
-          owner: ThorstenHans
-          name: "{{ .ProjectName }}"
-          branch: main
 
 checksum:
   name_template: 'checksums.txt'
