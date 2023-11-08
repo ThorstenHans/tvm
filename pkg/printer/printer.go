@@ -26,7 +26,7 @@ func (p defaultPrinter) Errorf(err error, format string, a ...any) {
 func (p defaultPrinter) Error(err error, message string) {
 	color.Red(message)
 
-	if p.verbose {
+	if p.verbose && err != nil {
 		color.Red(fmt.Sprintf("Error: %s", err))
 	}
 }
