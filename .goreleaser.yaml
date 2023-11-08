@@ -25,7 +25,27 @@ archives:
     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}_{{ .Version }}"
     wrap_in_directory: true
 
-    
+brews:
+  - commit_author:
+      name: github-actions
+      email: thorsten.hans+gh@outlook.com
+    commit_msg_template: "bot: Update brew formula for {{ .ProjectName }} version {{ .Tag }}"
+    folder: Formula
+    homepage: https://www.thorsten-hans.com
+    description: "tvm - Terraform Version Manager"
+    license: "MIT"
+    repository:
+      owner: ThorstenHans
+      name: "{{ .ProjectName }}"
+      branch: "feature/brew-formula-{{ .Tag }}"
+      pull_request:
+        enabled: true
+        draft: false
+        base:
+          owner: ThorstenHans
+          name: "{{ .ProjectName }}"
+          branch: main
+
 checksum:
   name_template: 'checksums.txt'
 snapshot:
@@ -46,4 +66,5 @@ changelog:
   filters:
     exclude:
       - '^docs'
+      - '^bot'
       - typo
